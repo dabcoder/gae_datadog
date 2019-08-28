@@ -1,0 +1,20 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+builtins:
+- appstats: on
+
+env_variables:
+  DATADOG_API_KEY: '<dd_api_key>'
+
+libraries:
+  - name: ssl
+    version: "latest"
+
+handlers:
+  - url: /datadog
+    script: datadog.app
+  - url: /.*
+    script: main.app
+

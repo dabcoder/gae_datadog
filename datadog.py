@@ -2,6 +2,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 import os
+import logging
 import time
 import json
 
@@ -20,15 +21,9 @@ import webapp2
 
 class DatadogStats(webapp2.RequestHandler):
     def get(self):
-        api_key = self.request.get('api_key')
-        if api_key != os.environ.get('DATADOG_API_KEY'):
-            self.abort(403)
-
-        FLAVORS = ['requests', 'services', 'all']
-
+        api_key = str(os.environ.get('DATADOG_API_KEY'))
+        # FLAVORS = ['requests', 'services', 'all']
         flavor = self.request.get('flavor')
-        if flavor not in FLAVORS:
-            self.abort(400)
 
         def get_task_queue_stats(queues=None):
             if queues is None:
@@ -75,20 +70,18 @@ class DatadogStats(webapp2.RequestHandler):
         stats = {
             'project_name': app_identity.get_application_id()
         }
-        if flavor == 'services' or flavor == 'all':
-            global_stat = db_stats.GlobalStat.all().get()
-            if global_stat is not None:
-                if hasattr(global_stat, "to_dict"):
-                    stats['datastore'] = global_stat.to_dict()
-                else:
-                    stats['datastore'] = to_dict(global_stat)
-                stats['datastore']['timestamp'] = str(stats['datastore']['timestamp'])
+        global_stat = db_stats.GlobalStat.all().get()
+        if global_stat is not None:
+            if hasattr(global_stat, "to_dict"):
+                stats['datastore'] = global_stat.to_dict()
+            else:
+                stats['datastore'] = to_dict(global_stat)
+            stats['datastore']['timestamp'] = str(stats['datastore']['timestamp'])
 
-            stats['memcache'] = memcache.get_stats()
-            stats['task_queue'] = get_task_queue_stats(self.request.get('task_queues', None))
+        stats['memcache'] = memcache.get_stats()
+        stats['task_queue'] = get_task_queue_stats(self.request.get('task_queues', None))
 
-        if flavor == 'requests' or flavor == 'all':
-            stats['requests'] = get_request_stats(self.request.get('after', None))
+        stats['requests'] = get_request_stats(self.request.get('after', None))
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.write(json.dumps(stats))
@@ -97,3 +90,4 @@ class DatadogStats(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/datadog', DatadogStats),
 ])
+
