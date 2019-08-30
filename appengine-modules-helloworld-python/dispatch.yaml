@@ -1,0 +1,17 @@
+
+dispatch:
+# Default module serves the typical web resources and all static resources.
+- url: "*/favicon.ico"
+  service: default
+
+# Send all mobile traffic to the mobile frontend.
+- url: "*/mobile/*"
+  service: mobile-frontend
+
+# Send all work to the one static backend.
+- url: "*/work/*"
+  service: static-backend
+
+# Datadog stats
+- url: "*/datadog/*"
+  service: datadog

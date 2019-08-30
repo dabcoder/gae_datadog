@@ -1,0 +1,14 @@
+service: static-backend
+runtime: python27
+api_version: 1
+threadsafe: true
+
+builtins:
+- appstats: on
+
+manual_scaling:
+  instances: 1
+
+handlers:
+- url: /.*
+  script: printenv.APP

@@ -1,0 +1,14 @@
+service: datadog
+runtime: python27
+api_version: 1
+threadsafe: true
+
+builtins:
+- appstats: on
+
+manual_scaling:
+  instances: 1
+
+handlers:
+- url: /.*
+  script: datadog.app
