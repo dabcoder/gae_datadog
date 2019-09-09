@@ -10,10 +10,12 @@ import json
 from google.appengine.api import app_identity, logservice, memcache, taskqueue
 from google.appengine.api import modules, images, namespace_manager
 
+
 # choose db or ndb according to what you're using
 try:
     from google.appengine.ext.db import stats as db_stats
-    from google.appengine.ext.db import to_dict
+    from google.appengine.ext.db import to_dict, metadata
+    from google.appengine.ext.cloudstorage import common
 except ImportError:
     from google.appengine.ext.ndb import stats as db_stats
 
@@ -84,6 +86,10 @@ class DatadogStats(webapp2.RequestHandler):
             else:
                 stats['datastore'] = to_dict(global_stat)
             stats['datastore']['timestamp'] = str(stats['datastore']['timestamp'])
+        
+        # other ext stats
+        stats['db_metadata'] = metadata.get_kinds()
+        stats['db_namespaces'] = metadata.get_namespaces()
 
         stats['memcache'] = memcache.get_stats()
         stats['task_queue'] = get_task_queue_stats(self.request.get('task_queues', None))
